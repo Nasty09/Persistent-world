@@ -1,4 +1,5 @@
-﻿#include <iostream>
+@palebedev
+#include <iostream>
 #include <ctime>
 #include <vector>
 #include <fstream>
