@@ -1,46 +1,37 @@
-#include "Planet.h"
-#include "Data.h" //массивы имен и цветов планет (допустимые значения)
+#include "Planet.hpp"
+#include <random>
+#include <iostream>
 
-int Planet::total = 0; //количество известных планет
+std::vector<std::string> PlanetsName = { "Mercury","Venus","Earth","Mars","Jupiter","Saturn","Uranus",
+                                         "Neptune","Pluto","Nebula","Comet","Asteroid","Sun","Moon","Star",
+                                         "Meteor","Andromeda","Galaxy","Orbit","Universe","Interstallar",
+                                         "Crater","Supernova","Rocket","Matter","Black Hole","Vacuum","Aries",
+                                         "Taurus","Virgo","Libra","Cancer","Gemini","Scorpio","Sagittarius",
+                                         "Capricorn","Pisces","Aquarius","Leo"};
+
+std::vector<std::string> ColorNames = { "white","black","gray","silver","red","blue","green","yellow",
+                                        "brown","orange","pink","purple","violet","beige","scarlet","golden",
+                                        "turquoise","emerald","coral","copper","olive","lilac","khaki","azure",
+                                        "amber","sand","vinous","chocolate","ivory","salmon","fuchsia","lavender",
+                                        "plum","indigo","maroon","crimson","teal","aquamarine","magenta" };
 
 Planet::Planet()
 {
-    id = total;
-    total++;
-    name = generateName();
-    color = generateColor();
-    numOfPortals = rand() % 10 + 1;
-    for (int i = 0; i < numOfPortals; i++)
-    {
-        Portals.push_back(-1);
-    }
+    std::mt19937 prng (std::random_device{}());
+    std::uniform_int_distribution<uint> dist(0, PlanetsName.size() - 1), dist1(0,ColorNames.size() - 1), dist2(2,10);
+    name = PlanetsName[dist(prng)];
+    color = ColorNames[dist1(prng)];
+    Portals.assign(dist2(prng),-1);
 }
 
-std::string Planet::generateName()
-{
-    return PlanetsName[rand() % 38];
-}
-
-std::string Planet::generateColor()
-{
-    return ColorNames[rand() % 38];
-}
-
-void Planet::OutputInfo()
-{
-    std::cout << "Name: " << name << ". "
-              << "Color: " << color << ". "
-              << "There are " << numOfPortals << " portals here.\n";
-}
-
-int Planet::getPortal(int num)
+int Planet::getPortal(int num) const
 {
     return Portals[num];
 }
 
-int Planet::getNumOfPortals()
+int Planet::getNumOfPortals() const
 {
-    return numOfPortals;
+    return Portals.size();
 }
 
 void Planet::setPortal(int num, int val)
@@ -48,9 +39,16 @@ void Planet::setPortal(int num, int val)
     Portals[num] = val;
 }
 
-int Planet::getEmptyPortal()
+void Planet::OutputInfo() const
 {
-    int i;
+    std::cout << "Name: " << name << ". "
+              << "Color: " << color << ". "
+              << "There are " << Portals.size() << " portals here.\n";
+}
+
+int Planet::getEmptyPortal() const
+{
+    int i, numOfPortals = Portals.size();
     for (i = 0; i < numOfPortals && Portals[i] != -1; i++);
     if (i == numOfPortals)
         return -1;

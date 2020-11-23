@@ -1,87 +1,13 @@
-#include <iostream>
-#include <ctime>
-#include <vector>
+﻿#include <iostream>
+#include "Planet.hpp"
+#include "World.hpp"
 #include <fstream>
-#include "Planet.h"
-#include <benchmark/benchmark.h>
-
-/*Определение, на какую планету ведет портал (новую или одну из известных)*/
-int definePlanet(int total, int current, std::vector<Planet> world)
-{
-    int newPlanet = rand() % (total * 2);
-    while ((newPlanet == current || (newPlanet < total && world[newPlanet].getEmptyPortal() == -1)))
-    {
-        newPlanet = rand() % (total * 2); //генерируем случайное число от 0 до общего количества известных планет умноженного на 2 (чтобы повысить вероятность попадания на новую планету)
-    }
-
-    if (newPlanet > total)
-    {
-        newPlanet = total;
-    }
-    return newPlanet;
-}
-
-/*Функция для вывода порталов на текущей планете*/
-void portalSelect(Planet planet, std::vector<Planet> world)
-{
-    std::cout << "Which portal do you choose?\n";
-    for (int i = 0; i < planet.getNumOfPortals(); i++) //перебор всех порталов на текущей планете
-    {
-        std::cout << (i + 1) << ": ";
-        if (planet.getPortal(i) == -1)
-        {
-            std::cout << "unknown\n";
-        }
-        else
-        {
-            world[planet.getPortal(i)].OutputInfo();
-        }
-    }
-    std::cout << "Enter 0 for exit.\n";
-}
-
-
-/*Функция для тестирования считывания состояния игры*/
-void Test_load(benchmark::State& state)
-{
-    int currentPlanet = 0;
-    std::vector<Planet> knownWorld;
-    for (auto _ : state) //часть кода которая тестируется, находится в этом цикле
-    {
-        std::ifstream is("savegame.cereal", std::ios::binary); //открываем файл
-        cereal::BinaryInputArchive arInput(is);
-        arInput(currentPlanet, knownWorld); //считываем данные
-        is.close();
-    }
-}
-BENCHMARK(Test_load); //объеявление функции, как теста для benchmark
-
-/*Функция для тестирования сохранения состояния игры*/
-void Test_save(benchmark::State& state)
-{
-    int currentPlanet = 0;
-    std::vector<Planet> knownWorld;
-    std::ifstream is("savegame.cereal", std::ios::binary);
-    cereal::BinaryInputArchive arInput(is);
-    arInput(currentPlanet, knownWorld);
-    is.close();
-    for (auto _ : state)
-    {
-        std::ofstream os("savegame.cereal", std::ios::binary); //открываем файл для записи
-        cereal::BinaryOutputArchive arOut(os);
-        arOut(currentPlanet, knownWorld); //сохраняем состояние игры
-        os.close();
-    }
-}
-BENCHMARK(Test_save);
-
+#include <vector>
 
 int main()
 {
-    int currentPlanet = 0, newPlanet;
-    int c = 1, numOfPlanets = 0;
-    std::vector<Planet> knownWorld;
-    srand(time(0));
+    int currentPlanet = 0, newPlanet, c = 1;
+    World knownWorld;
     std::ifstream is("savegame.cereal", std::ios::binary);
     if (is)
     {
@@ -91,55 +17,53 @@ int main()
         if (a == 'n')
         {
             cereal::BinaryInputArchive arInput(is);
-            arInput(currentPlanet, knownWorld);
-            numOfPlanets = Planet::total;
+            arInput(knownWorld);
             is.close();
         }
         else
         {
-            knownWorld.push_back(Planet());
-            numOfPlanets++;
+            knownWorld.add(Planet());
         }
     }
     else
     {
-        knownWorld.push_back(Planet());
-        numOfPlanets++;
+        knownWorld.add(Planet());
     }
     std::cout << "You are on the Planet:\n";
-    knownWorld[currentPlanet].OutputInfo();
-    portalSelect(knownWorld[currentPlanet], knownWorld);
+    knownWorld.getWorld()[currentPlanet].OutputInfo();
+    knownWorld.portalSelect();
     std::cin >> c;
     while (c != 0)
     {
-        if ((c - 1) < knownWorld[currentPlanet].getNumOfPortals())
+        if (0 < c && c <= knownWorld.getWorld()[currentPlanet].getNumOfPortals()) //если выбран корректный номер нортала
         {
-            if (knownWorld[currentPlanet].getPortal(c - 1) == -1)
+            if (knownWorld.getWorld()[currentPlanet].getPortal(c - 1) == -1) //если портал не исследован
             {
-                newPlanet = definePlanet(numOfPlanets, currentPlanet, knownWorld);
-                if (newPlanet == numOfPlanets)
+                newPlanet = knownWorld.definePlanet();
+                if (newPlanet == knownWorld.getWorld().size()) //если портал ведет на новую планету
                 {
-                    knownWorld.push_back(Planet());
-                    numOfPlanets++;
+                    knownWorld.add(Planet());
                 }
-                knownWorld[currentPlanet].setPortal(c - 1, newPlanet);
-                knownWorld[newPlanet].setPortal(knownWorld[newPlanet].getEmptyPortal(), currentPlanet);
+                knownWorld.setWorldPortal(c - 1, newPlanet);
+                knownWorld.setPlanet(newPlanet);
+                knownWorld.setWorldPortal(knownWorld.getWorld()[newPlanet].getEmptyPortal(), currentPlanet);
                 currentPlanet = newPlanet;
             }
-            else if (c != 0)
+            else//если портал уже исследован
             {
-                currentPlanet = knownWorld[currentPlanet].getPortal(c - 1);
+                currentPlanet = knownWorld.getWorld()[currentPlanet].getPortal(c - 1);
+                knownWorld.setPlanet(currentPlanet);
             }
         }
+        else
+            std::cout << "\nThis portal doesn't exist.\n" << "Choose another one\n\n";
         std::cout << "You are on the Planet:\n";
-        knownWorld[currentPlanet].OutputInfo();
-        portalSelect(knownWorld[currentPlanet], knownWorld);
+        knownWorld.getWorld()[currentPlanet].OutputInfo();
+        knownWorld.portalSelect();
         std::cin >> c;
     }
     std::ofstream os("savegame.cereal", std::ios::binary);
     cereal::BinaryOutputArchive arOut(os);
-    arOut(currentPlanet,knownWorld);
-    os.close();
-    benchmark::RunSpecifiedBenchmarks(); //запуск тестов
+    arOut(knownWorld);
     return 0;
 }
