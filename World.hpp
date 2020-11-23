@@ -21,17 +21,5 @@ public:
     {
         ar(currentPlanet, world);
     }
-
-//    template <class Archive>
-//    void save( Archive & ar ) const
-//    {
-//        ar(currentPlanet, world);
-//    }
-
-//    template <class Archive>
-//    void load( Archive & ar )
-//    {
-//        ar(currentPlanet, world);
-//    }
 };
 #endif
