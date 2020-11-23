@@ -22,17 +22,5 @@ public:
     {
         ar(name, color, Portals);
     }
-
-//    template <class Archive>
-//    void save( Archive & ar ) const
-//    {
-//        ar(name, color, Portals);
-//    }
-
-//    template <class Archive>
-//    void load( Archive & ar )
-//    {
-//        ar(name, color, Portals);
-//    }
 };
 #endif
