@@ -15,8 +15,8 @@
 
 
 ## Results
-Результаты, полученные на больших значениях начиная с 20, с шагом в 20.
+Результаты, полученные на больших значениях начиная с 20, с шагом в 2000.
 ![Image of Big results](https://github.com/Nasty09/Persistent-world/blob/main/Big%20results.png)
 
-Результаты, полученные на маленьких занчениях начиная с 2, с шагом в 2000
+Результаты, полученные на маленьких занчениях начиная с 2, с шагом в 20
 ![Image of Small results](https://github.com/Nasty09/Persistent-world/blob/main/Small%20results.png)
