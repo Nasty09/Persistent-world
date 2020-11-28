@@ -16,13 +16,17 @@ void Test_load(benchmark::State& state)
     os.close();
     for (auto _ : state)
     {
-        std::ifstream is("savegame.cereal", std::ios::binary);
-        cereal::BinaryInputArchive arInput(is);
-        arInput(knownWorld);
-        is.close();
+        {
+            World new_World;
+            std::ifstream is("savegame.cereal", std::ios::binary);
+            cereal::BinaryInputArchive arInput(is);
+            arInput(new_World);
+            state.PauseTiming();
+        }
+        state.ResumeTiming();
     }
 }
-BENCHMARK(Test_load)->DenseRange(20, 2020, 2000);
+BENCHMARK(Test_load)->DenseRange(2, 2002, 20);
 
 /*Функция для тестирования сохранения состояния игры*/
 void Test_save(benchmark::State& state)
@@ -33,16 +37,12 @@ void Test_save(benchmark::State& state)
         std::ofstream os("savegame.cereal", std::ios::binary);
         cereal::BinaryOutputArchive arOut(os);
         arOut(knownWorld);
-        os.close();
     }
 }
-BENCHMARK(Test_save)->DenseRange(20, 2020, 2000);
+BENCHMARK(Test_save)->DenseRange(2, 2002, 20);
 
 int main()
 {
-    try
-    {
     benchmark::RunSpecifiedBenchmarks(); //запуск тестов
-    } catch (const std::exception& e) {std::cout << e.what();}
     return 0;
 }
